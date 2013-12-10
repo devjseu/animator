@@ -24,6 +24,15 @@
          */
             reqId = 0,
         /**
+         *
+         */
+            measureFrames = 0,
+        /**
+         *
+         */
+            measureSize = 101,
+        idCounter = 0,
+        /**
          * task thich need to be performed
          */
             tasks = [],
@@ -49,11 +58,16 @@
          * content of fps counter
          */
             fpsText,
+        workerTask,
         /**
          * CSS polyfill
          */
             CSS3,
-        Bezier;
+        /**
+         * animations algorithms
+         */
+            Bezier,
+        Properties;
 
     /**
      *
@@ -70,10 +84,23 @@
      * run when DOM is ready
      */
     function onReady() {
-        Bezier = window.Animator.Bezier;
-        CSS3 = (window.CSS3 && window.CSS3.init()) || (function () {
+        /**
+         * Initialize CSS3 polyfill
+         * @type {*}
+         */
+        CSS3 = (window.Animator.CSS3 && window.Animator.CSS3.init()) || (function () {
             throw new Error("CSS3 polyfill was not found");
         }());
+
+        /**
+         * assign global variables to local
+         */
+        Bezier = window.Animator.Bezier;
+        Properties = window.Animator.Properties;
+
+        /**
+         * run users callbacks
+         */
         for (var i = 0, l = animatorOnReady.length; i < l; i++) {
             animatorOnReady[i]();
         }
@@ -83,8 +110,7 @@
      * calculate current frame rate
      *
      */
-    function fpsTick() {
-        var thisFrame = new Date().getTime();
+    function fpsTick(thisFrame) {
         fpsStart = fpsStart || new Date().getTime();
         if (thisFrame - fpsStart >= 1000) {
             fpsStart += 1000;
@@ -136,7 +162,7 @@
      * @returns {number}
      */
     function calcUnit(duration, frame, lastFrame) {
-        return 1 / (duration / (frame - lastFrame))
+        return 1 / (duration / (frame - lastFrame));
     }
 
     /**
@@ -160,6 +186,8 @@
      *
      */
     function startTicking() {
+        if (debug && measureFrames < measureSize)
+            Measure.start('frame-' + measureFrames);
         reqId = requestAnimationFrame(tick);
     }
 
@@ -176,10 +204,15 @@
      *
      */
     function tick() {
-        var tmp = tasks;
+        if (debug && measureFrames < measureSize)
+            Measure.stop('frame-' + measureFrames++);
+        if (debug && measureFrames < measureSize)
+            Measure.start('frame-' + measureFrames);
+        var tmp = tasks,
+            time = new Date().getTime();
         tasks = [];
         for (var i = 0, l = tmp.length; i < l; i++) {
-            tmp[i]();
+            tmp[i](time);
             tmp[i] = null;
         }
         tmp = null;
@@ -207,9 +240,11 @@
     var Animator = Base.extend(function (el) {
         Base.prototype.constructor.call(this);
         var me = this, s = me.set.bind(me);
+        s('id', 'animator-' + idCounter++);
         s('el', el);
         s('elStyle', el.style);
         s('elCSSText', el.style.CSSText);
+        s('properties', new Properties(el.style));
         s('fpsReal', 30);//fps
         s('fpsLen', 1000 / me.get('fpsReal'));
         s('stopped,', undefined);
@@ -288,13 +323,12 @@
     /**
      * do in each request animation frame
      */
-    Animator.prototype.tick = function animatorTick() {
+    Animator.prototype.tick = function animatorTick(thisFrame) {
         var me = this,
-        // current frame time
-            thisFrame = new Date().getTime(),
         // queue
             queue = me._queue,
             done = me._doneQueue,
+            properties = me._properties,
             value = 0,
             step;
         // recalculate unit for each animation
@@ -316,8 +350,9 @@
                 }
                 done[i].push(queue[i].shift());
             }
-            me._elStyle[CSS3.get('transform')] = 'translate3d(' + value + 'px, 0px, 0px)';
+            properties.setProperty(step.property, value);
         }
+        properties.applyStyle();
         // set when last frame occurred
         me._lastFrame = thisFrame;
         if (!isQueueEmpty(queue)) {
@@ -371,6 +406,7 @@
         if (debug) {
             debug = false;
             fpsInit = false;
+            measureFrames = 0;
             fpsText.parentNode.removeChild(fpsText);
         } else {
             debug = true;
@@ -392,5 +428,12 @@
         animatorOnReady.push(callback.bind(this));
     };
 
+    if (window.Animator) {
+        for (var key in window.Animator) {
+            if (window.Animator.hasOwnProperty(key)) {
+                Animator[key] = window.Animator[key];
+            }
+        }
+    }
     window.Animator = Animator;
 }(window));

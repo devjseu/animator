@@ -64,7 +64,9 @@
         Base.prototype.set = function (property, value) {
             var p = "_" + property,
                 oldVal = this[p];
-            if (value !== oldVal) {
+            if (value instanceof Object) {
+                this[p] = value;
+            } else if (value !== oldVal) {
                 this[p] = value;
                 this.fireEvent(property + 'Change', this, value, oldVal);
             }

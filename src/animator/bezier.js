@@ -22,13 +22,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
-
+if(typeof window === 'undefined')
+    var window = {};
 /**
  * JavaScript port of Webkit implementation of CSS cubic-bezier(p1x.p1y,p2x,p2y) by http://mck.me
  * http://svn.webkit.org/repository/webkit/trunk/Source/WebCore/platform/graphics/UnitBezier.h
  */
 (function (window, undefined) {
     'use strict';
+
 
     /**
      * Duration value to use when one is not specified (400ms is a common value).
@@ -57,6 +59,7 @@
     var unitBezier = function (p1x, p1y, p2x, p2y) {
 
         // private members --------------------------------------------
+        var CACHE = {};
 
         // Calculate the polynomial coefficients, implicit first and last control points are (0,0) and (1,1).
 
@@ -200,7 +203,7 @@
          * @param duration {number} the duration of the animation in milliseconds
          * @return {number} the y value along the bezier curve
          */
-        return function (x, duration) {
+        return function CubicBezierY(x, duration) {
             return solve(x, solveEpsilon(+duration || DEFAULT_DURATION));
         };
     };

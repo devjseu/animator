@@ -1,4 +1,5 @@
 (function (window, undefined) {
+    "use strict";
     /**
      * css functionality tests
      *
@@ -12,11 +13,10 @@
             transition: null
         },
         has3d = false,
-        init,
-        t;
+        init;
 
     function testProperties() {
-        var property;
+        var property, t;
         // Add it to the body to get the computed style
         document.body.insertBefore(dom, null);
         /**
@@ -61,7 +61,7 @@
             return !!(available[property] !== null);
         },
         get: function (property) {
-            return available[property];
+            return available[property] || property;
         },
         getCSS: function (property) {
             return available[property + "CSS"];
@@ -70,7 +70,9 @@
             return has3d;
         }
     };
-    window.CSS3 = CSS3;
+    window.Animator = window.Animator || {};
+    window.Animator.CSS3 = CSS3;
+
     /**
      * mobile detection
      * @returns {boolean}
@@ -95,8 +97,9 @@
  * Paul Irish polyfill for request animation frame
  */
 (function (window) {
-    var lastTime = 0;
-    var vendors = ['webkit', 'moz'];
+    var lastTime = 0,
+        vendors = ['webkit', 'moz'],
+        startTime;
     for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
         window.cancelAnimationFrame =
@@ -119,4 +122,10 @@
         window.cancelAnimationFrame = function (id) {
             clearTimeout(id);
         };
+
+    startTime = (new Date()).getTime();
+    window.performance = performance || {};
+    window.performance.now = window.performance.now || function () {
+        return (new Date()).getTime() - startTime;
+    };
 }(window));

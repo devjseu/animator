@@ -6,18 +6,28 @@ function onReady() {
     createTest();
     Animator.toggleDebug();
     setTimeout(function () {
+        Measure.start('test1CreateElements', 'create all needed elements for test 1');
         for (var i = 0, l = divs.length; i < l; i++) {
             Animator.animate(divs[i], [
                 {
                     x: {
-                        delay: Math.floor(Math.random() * 101) * 10, duration: Math.floor(Math.random() * 10001),
+                        delay: Math.floor(Math.random() * 101) * 10,
+                        duration: Math.floor(Math.random() * 10001),
                         value: 1030,
                         path: 0,
                         easing: "linear"
+                    },
+                    y: {
+                        delay: Math.floor(Math.random() * 101) * 10,
+                        duration: Math.floor(Math.random() * 10001),
+                        value: 600,
+                        path: 1,
+                        easing: "linear"
                     }
                 }
-            ], 'infinity');
+            ], 0);
         }
+        Measure.stop('test1CreateElements');
     }, 200);
 //    Animator.animate(window.kw2, [
 //        {x: {delay: 100, duration: 1000, value: 1030, path: 0, easing: "ease"}},
@@ -33,7 +43,7 @@ Animator.onReady(onReady);
 /**=============================================*/
 
 function createTest() {
-    for (var i = 2; i < 500; i++) {
+    for (var i = 2; i < 250; i++) {
         var div = document.createElement('div');
         div.className = "kw";
         div.id = "kw" + i;
