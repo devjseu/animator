@@ -1,0 +1,9 @@
+{
+    "name": "animator",
+    "version": "0.1.0",
+    "dependencies": {
+        "jquery": ">= 1.9.0",
+        "bootstrap": ">=3.0.0",
+        "qunit" : ">=1.12.0"
+    }
+}

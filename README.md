@@ -1,4 +1,4 @@
-animator
-========
+Animator
+=============
 
-Javascript library to animate DOM elements.
+Javascript library for high performance animations.

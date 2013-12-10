@@ -1,0 +1,101 @@
+html, body {
+    height: 99%;
+}
+
+#container {
+    height: 100%;
+    width: 1080px;
+    margin: 0 auto;
+}
+/* ======= example-1 ====== */
+.column {
+    height: 100%;
+    max-height: 100%;
+    width: 50%;
+    float: left;
+    overflow: hidden;
+    position: relative;
+}
+
+#fpsText {
+    position: absolute;
+    top: 85px;
+    right: 0px;
+    width: 80px;
+    height: 20px;
+    padding: 10px;
+    z-index: 99;
+    background: rgba(0,0,0,.7);
+    color: red;
+    font-family: Verdana;
+    border: 1px solid black;
+}
+
+/* ======= example-2 ====== */
+#example #emulate{
+    height: 100%;
+}
+
+#tor {
+    width: 100%;
+    height: 5000px;
+    background: silver;
+    position: relative;
+    overflow: hidden;
+}
+
+.kw {
+    width: 5px;
+    height: 5px;
+    position: absolute;
+}
+
+#kw1 {
+    background: red;
+    top: 0;
+    left: 0;
+    transition-property: all;
+    transition-duration: 10s;
+    transition-delay: 0s;
+    /* Safari */
+    -webkit-transition-property:all;
+    -webkit-transition-duration:10s;
+    -webkit-transition-delay:0s;
+
+}
+
+#kw2 {
+    background: yellow;
+    top: 50px;
+    left: 0;
+}
+
+#kw3 {
+    background: gold;
+    top: 100px;
+    left: 0;
+}
+
+#kw4 {
+    background: #ec971f;
+    top: 150px;
+    left: 0;
+}
+
+#kw5 {
+    background: slateblue;
+    top: 200px;
+    left: 0;
+}
+
+#kw6 {
+    background: salmon;
+    top: 250px;
+    left: 0;
+}
+
+#kw7 {
+    background: saddlebrown;
+    top: 300px;
+    left: 0;
+}
