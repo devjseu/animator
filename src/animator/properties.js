@@ -53,7 +53,16 @@
     Properties.prototype.getCSSTranslate3d = function () {
         var me = this,
             properties = me._properties;
-        return 'translate3d(' + (properties.x || 0) + 'px, ' + (properties.y || 0) + 'px, ' + (properties.z || 0) + 'px)';
+        if (!properties.x) {
+            properties.x = 0;
+        }
+        if (!properties.y) {
+            properties.y = 0;
+        }
+        if (!properties.z) {
+            properties.z = 0;
+        }
+        return 'translate3d(' + properties.x + 'px, ' + properties.y + 'px, ' + properties.z + 'px)';
     };
 
     Properties.prototype.getCSSTranslate2d = function () {

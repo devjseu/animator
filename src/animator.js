@@ -67,7 +67,8 @@
          * animations algorithms
          */
             Bezier,
-        Properties;
+        Properties,
+        CACHE = {};
 
     /**
      *
@@ -149,8 +150,11 @@
      * @returns {number}
      */
     function calcValue(step, thisFrame, lastFrame) {
-        step.xFunc += calcUnit(step.duration, thisFrame, lastFrame);
-        return step.start + step.distance * Bezier[step.easing](step.xFunc, step.duration);
+        var xFunc = step.xFunc,
+            easing = step.easing,
+            duration = step.duration;
+        step.xFunc += Math.round(calcUnit(duration, thisFrame, lastFrame) * 10000) / 10000;
+        return step.start + step.distance * Bezier[easing](xFunc, duration);
     }
 
     /**
@@ -268,6 +272,7 @@
         s('lastFrame', time);
         m.suspendEvents(true);
         addTaskForFrame(m.tick.bind(m));
+        return this;
     };
 
     /**
@@ -280,6 +285,7 @@
         }
         me.suspendEvents(false);
         me.set('stopped', true);
+        return this;
     };
 
     /**
@@ -291,30 +297,31 @@
         if (typeof props === 'string')
             throw new Error('string passed as property object');
         var l = props.length,
-            q = [];
+            q = [],
+            clone;
         if (l) {
             for (var i = 0; i < l; i++) {
-                for (var key in props[i]) {
-                    if (props[i].hasOwnProperty(key)) {
-                        if (q[props[i][key].path] === undefined) {
-                            q[props[i][key].path] = [];
-                        }
-                        props[i][key].property = key;
-                        props[i][key].xFunc = 0;
-                        props[i][key].easing = props[i][key].easing || "linear";
-                        if (i > 0) {
-                            props[i][key].start = props[i - 1][key].value;
-                            props[i][key].distance = props[i][key].value - props[i - 1][key].value;
-                        } else {
-                            props[i][key].start = 0;
-                            props[i][key].distance = props[i][key].value;
-                        }
-                        q[props[i][key].path].push(props[i][key]);
-                    }
+                if (q[props[i].path] === undefined) {
+                    q[props[i].path] = [];
                 }
+                if (!props[i].properties instanceof Array) {
+                    props[i].properties = [props[i].properties];
+                }
+                props[i].xFunc = 0;
+                props[i].easing = props[i].easing || "linear";
+                if (i > 0) {
+                    props[i].start = props[i - 1].value;
+                    props[i].distance = props[i].value - props[i - 1].value;
+                } else {
+                    props[i].start = 0;
+                    props[i].distance = props[i].value;
+                }
+                q[props[i].path].push(props[i]);
+
             }
             this.set('queue', q);
-        } else {
+        }
+        else {
             this.set('queue', props);
         }
         return this;
@@ -337,8 +344,13 @@
                 continue;
             }
             step = queue[i][0];
-            step.startTime = step.startTime || thisFrame;
-            if ((thisFrame - step.startTime) < (step.delay || 0)) {
+            if (!step.startTime) {
+                step.startTime = thisFrame;
+            }
+            if (!step.delay) {
+                step.delay = 0;
+            }
+            if ((thisFrame - step.startTime) < step.delay) {
                 continue;
             }
             value = calcValue(step, thisFrame, me._lastFrame);
@@ -350,7 +362,9 @@
                 }
                 done[i].push(queue[i].shift());
             }
-            properties.setProperty(step.property, value);
+            for (var j = 0, jl = step.properties.length; j < jl; j++) {
+                properties.setProperty(step.properties[j], value);
+            }
         }
         properties.applyStyle();
         // set when last frame occurred
@@ -386,13 +400,27 @@
     };
 
     /**
+     * called before animation start
+     */
+    Animator.prototype.beforeStart = function () {
+        return this;
+    };
+
+    /**
+     * called after animation start
+     */
+    Animator.prototype.afterEnd = function () {
+        return this;
+    };
+
+    /**
      * static function to animate element
      * @param el
      * @param prop
      * @param loops
      */
     Animator.animate = function (el, prop, loops) {
-        (new Animator(el))
+        return (new Animator(el))
             .steps(prop)
             .repeat(loops)
             .start();

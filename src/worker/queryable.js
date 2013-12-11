@@ -1,14 +1,14 @@
 /*
- QueryableWorker instances methods:
+ WorkerQueryable instances methods:
  * sendQuery(queryable function name, argument to pass 1, argument to pass 2, etc. etc): calls a Worker's queryable function
  * postMessage(string or JSON Data): see Worker.prototype.postMessage()
  * terminate(): terminates the Worker
  * addListener(name, function): adds a listener
  * removeListener(name): removes a listener
- QueryableWorker instances properties:
+ WorkerQueryable instances properties:
  * defaultListener: the default listener executed only when the Worker calls the postMessage() function directly
  */
-function QueryableWorker(sURL, fDefListener, fOnError) {
+function WorkerQueryable(sURL, fDefListener, fOnError) {
     var oInstance = this, oWorker = new Worker(sURL), oListeners = {};
     this.defaultListener = fDefListener || function () {
     };
@@ -26,7 +26,7 @@ function QueryableWorker(sURL, fDefListener, fOnError) {
     this.sendQuery = function (/* queryable function name, argument to pass 1, argument to pass 2, etc. etc */) {
         var args = arguments;
         if (args.length < 1) {
-            throw new TypeError("QueryableWorker.sendQuery - not enough arguments");
+            throw new TypeError("WorkerQueryable.sendQuery - not enough arguments");
             return;
         }
         if (typeof args[args.length - 1] === 'function') {

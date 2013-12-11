@@ -5,23 +5,61 @@ function onReady() {
         Bezier = window.Animator.Bezier;
 
     var CACHE = {},
-        duration = 60000000,
+        CACHE2 = {},
+    //last save : 5000000
+        duration = 6200000,
         distance = 3000,
         _thisFrame = 0,
         _lastFrame = 0,
         xFunc = 0,
-        start;
+        start,
+        task;
 
     function calcValue(thisFrame, lastFrame) {
+//        xFunc += Math.round(calcUnit(duration, thisFrame, lastFrame) * 100000) / 100000;
         xFunc += calcUnit(duration, thisFrame, lastFrame);
-        return start + distance * (CACHE['linear' + xFunc + duration] = (CACHE[xFunc + '' + duration] || Bezier['linear'](xFunc, duration)));
+        CACHE['linear' + xFunc + duration] = Bezier['linear'](xFunc, duration);
+        return start + distance * CACHE['linear' + xFunc + duration];
+    }
+
+    function calcValueCached(thisFrame, lastFrame) {
+//        xFunc += Math.round(calcUnit(duration, thisFrame, lastFrame) * 100000) / 100000;
+        xFunc += calcUnit(duration, thisFrame, lastFrame);
+        if (!CACHE['linear' + xFunc + duration]) {
+            CACHE['linear' + xFunc + duration] = Bezier['linear'](xFunc, duration);
+        }
+        return start + distance * CACHE['linear' + xFunc + duration];
+    }
+
+    function calcValueRounded(thisFrame, lastFrame) {
+        xFunc += Math.round(calcUnit(duration, thisFrame, lastFrame) * 100000) / 100000;
+//        xFunc += calcUnit(duration, thisFrame, lastFrame);
+        CACHE2['linear' + xFunc + duration] = Bezier['linear'](xFunc, duration);
+        return start + distance * CACHE2['linear' + xFunc + duration];
+    }
+
+    function calcValueRoundedCached(thisFrame, lastFrame) {
+        xFunc += Math.round(calcUnit(duration, thisFrame, lastFrame) * 100000) / 100000;
+//        xFunc += calcUnit(duration, thisFrame, lastFrame);
+
+        if (!CACHE2['linear' + xFunc + duration]) {
+            CACHE2['linear' + xFunc + duration] = Bezier['linear'](xFunc, duration);
+        }
+//        CACHE2['linear' + xFunc + duration] = CACHE2['linear' + xFunc + duration] || Bezier['linear'](xFunc, duration);
+        return start + distance * CACHE2['linear' + xFunc + duration];
     }
 
     function calcUnit(duration, frame, lastFrame) {
         return 1 / (duration / (frame - lastFrame))
     }
 
-    setTimeout(function () {
+    function stopTests() {
+        clearInterval(id);
+    }
+
+    window.stopTests = stopTests;
+
+    var id = setInterval(function () {
         /**
          * test 1
          */
@@ -45,14 +83,73 @@ function onReady() {
         _lastFrame = _thisFrame;
         Measure.start('Cached');
         while (xFunc <= 1) {
-            calcValue(_thisFrame, _lastFrame);
+            calcValueCached(_thisFrame, _lastFrame);
             _lastFrame = _thisFrame;
             _thisFrame += 32;
         }
         Measure.stop('Cached');
+        xFunc = 0;
         // show results in console
-        console.dir(Measure.getMeasurements());
-    }, 200);
+        console.log('Not rounded - Non cached: ' + Measure.getMeasurements().NonCached.duration, '| Cached: ' + Measure.getMeasurements().Cached.duration);
+
+        /**
+         * test 3
+         */
+        CACHE = {};
+        start = +new Date;
+        _thisFrame = start;
+        _lastFrame = _thisFrame;
+        Measure.start('NonCachedRounded');
+        while (xFunc <= 1) {
+            calcValueRounded(_thisFrame, _lastFrame);
+            _lastFrame = _thisFrame;
+            _thisFrame += 32;
+        }
+        Measure.stop('NonCachedRounded');
+        xFunc = 0;
+
+        /**
+         * test 4
+         */
+
+        _thisFrame = start;
+        _lastFrame = _thisFrame;
+        Measure.start('CachedRounded');
+        while (xFunc <= 1) {
+            calcValueRoundedCached(_thisFrame, _lastFrame);
+            _lastFrame = _thisFrame;
+            _thisFrame += 32;
+        }
+        Measure.stop('CachedRounded');
+        xFunc = 0;
+        // show results in console
+        console.log('Rounded     - Non cached: ' + Measure.getMeasurements().NonCachedRounded.duration, '| Cached: ' + Measure.getMeasurements().CachedRounded.duration);
+
+        /**
+         * test 5
+         */
+//        task = new WorkerQueryable('../src/worker.js');
+//        Measure.start('NonCachedRoundedWorker');
+//        var counter = 0;
+//        while (xFunc <= 1) {
+//            counter++;
+//            xFunc += calcUnit(duration, _thisFrame, _lastFrame);
+//            task.sendQuery('calcValue', {
+//                duration: duration,
+//                xFunc: xFunc,
+//                easing: 'linear'
+//            });
+//            calcValueRounded(_thisFrame, _lastFrame);
+//            _lastFrame = _thisFrame;
+//            _thisFrame += 32;
+//        }
+//        Measure.stop('NonCachedRoundedWorker');
+//        xFunc = 0;
+
+
+    }, 2000);
+
+
 //    Animator.animate(window.kw2, [
 //        {x: {delay: 100, duration: 1000, value: 1030, path: 0, easing: "ease"}},
 //        {x: {delay: 0, duration: 1000, value: 0, path: 0, easing: "ease"}},

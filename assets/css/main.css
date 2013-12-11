@@ -38,7 +38,7 @@ html, body {
 
 #tor {
     width: 100%;
-    height: 5000px;
+    height: 100%;
     background: silver;
     position: relative;
     overflow: hidden;
